@@ -1,0 +1,139 @@
+---
+title: "HW_3"
+output: html_document
+date: "2024-03-28"
+---
+
+В первых двух заданиях вам необходимо посчитать описательные статистики. 
+Для количественной переменной рассчитайте число наблюдений, среднее, стандартное отклонение, 1-й и 3-й квартили, минимум и максимум. 
+Для категориальной переменной определите абсолютную и относительные частоты.
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+```{r}
+data <- read_excel("pima.xlsx")
+head(data)
+```
+```{r}
+data <- na.omit(data)
+```
+
+Необходимо выполнить следующие пункты:
+Рассчитайте описательные статистики для переменных glucose, pressure, mass. — 1 балл
+число наблюдений, среднее, стандартное отклонение, 1-й и 3-й квартили, минимум и максимум. 
+
+```{r}
+study_parametr = data$glucose
+summary(study_parametr)
+```
+```{r}
+study_parametr = data$pressure
+summary(study_parametr)
+```
+```{r}
+study_parametr = data$mass
+summary(study_parametr)
+```
+
+Рассчитайте описательную статистику для переменной 'diabetes'.
+
+```{r}
+data <- data %>% 
+  mutate(diabetes = as.factor(diabetes))
+head(data)
+```
+```{r}
+summary(data$diabetes)
+```
+Создайте на основе переменной age новую переменную age_group, которая будет отражать следующие возрастные группы: 21–35, 36–49 и 50+. Посчитайте описательную статистику для новой переменной. — 1 балл
+
+```{r}
+summary(data$age)
+```
+
+
+```{r}
+data$age_group <- ifelse(data$age <= 35, '21–35', 
+                         ifelse(data$age >= 36 & data$age <= 49, '36–49' , '50+'))
+```
+
+```{r}
+#summary(data$age_group)
+data <- data %>% 
+  mutate(age_group = as.factor(age_group))
+head(data)
+```
+```{r}
+summary(data$age_group)
+```
+Определите 90% доверительный интервал для переменной pedigree. — 2 балла
+
+```{r}
+t_test <- t.test(data$pedigree, conf.level = 0.9) # Задаем уровень доверия в 90%.
+
+# Выводим результаты доверительного интервала.
+t_test
+```
+
+
+Постройте график плотности вероятности для переменной glucose и отметьте на нем среднее значение. 
+
+```{r}
+ggplot(data, aes(x = glucose)) +
+  geom_density() +
+  geom_vline(aes(xintercept = mean(glucose, na.rm = TRUE)), color = "red") +
+  labs(title = "График плотности для переменной glucose", x = "Уровень глюкозы", y = "Плотность") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Для той же переменной постройте гистограмму. 
+```{r}
+ggplot(data, aes(x = glucose)) +
+  geom_histogram(binwidth = 10, color = "black", fill = "lightgreen") +
+  geom_vline(aes(xintercept = mean(glucose, na.rm = TRUE)), color = "red") +
+  labs(title = "График плотности для переменной glucose", x = "Уровень глюкозы", y = "Плотность") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Постройте два ящика с усами для значений pos и neg соответственно переменной diabetes. — 3 балла
+
+```{r}
+boxplot(
+  glucose ~ diabetes, 
+  data = data,
+  main = "Ящики с усами для диабета",
+  xlab = "Наличие диабета",
+  ylab = "Уровень глюкозы",
+  col = c('green', 'red'))
+```
+
+
+Постройте на одном графике две диаграммы рассеяния для наличия или отсутствия диабета. По оси X представьте значения обхвата трицепса, а по оси Y — массу тела. Выполните окрашивание, заливку и группирование по переменной diabetes. — 3 балла
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
