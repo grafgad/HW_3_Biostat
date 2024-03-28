@@ -16,28 +16,65 @@ library(readxl)
 data <- read_excel("pima.xlsx")
 head(data)
 ```
+
+Удалим пустые значения
 ```{r}
 data <- na.omit(data)
 ```
 
+
 Необходимо выполнить следующие пункты:
-Рассчитайте описательные статистики для переменных glucose, pressure, mass. — 1 балл
-число наблюдений, среднее, стандартное отклонение, 1-й и 3-й квартили, минимум и максимум. 
+Рассчитайте описательные статистики для переменных glucose, pressure, mass.
+
 
 ```{r}
 study_parametr = data$glucose
 summary(study_parametr)
 ```
+
+Проводим рассчет рекомендованным методм summarise()
+
+
+```{r}
+study_parametr = data$glucose
+data %>% 
+  summarise('число наблюдений'= n(),
+            'среднее' = mean(study_parametr),
+            'стандартное отклонение' = sd(study_parametr),
+            '1-й квартиль' = quantile(study_parametr, probs = 0.25),
+            '3-й квартиль' = quantile(study_parametr, probs = 0.75),
+            'минимум' = min(study_parametr),
+            'максимум' = max(study_parametr)
+            )
+```
 ```{r}
 study_parametr = data$pressure
-summary(study_parametr)
+data %>% 
+  summarise('число наблюдений'= n(),
+            'среднее' = mean(study_parametr),
+            'стандартное отклонение' = sd(study_parametr),
+            '1-й квартиль' = quantile(study_parametr, probs = 0.25),
+            '3-й квартиль' = quantile(study_parametr, probs = 0.75),
+            'минимум' = min(study_parametr),
+            'максимум' = max(study_parametr)
+            )
 ```
 ```{r}
 study_parametr = data$mass
-summary(study_parametr)
+data %>% 
+  summarise('число наблюдений'= n(),
+            'среднее' = mean(study_parametr),
+            'стандартное отклонение' = sd(study_parametr),
+            '1-й квартиль' = quantile(study_parametr, probs = 0.25),
+            '3-й квартиль' = quantile(study_parametr, probs = 0.75),
+            'минимум' = min(study_parametr),
+            'максимум' = max(study_parametr)
+            )
 ```
 
 Рассчитайте описательную статистику для переменной 'diabetes'.
+
+Переводим переменную из строковой в факториальную.
 
 ```{r}
 data <- data %>% 
@@ -47,20 +84,22 @@ head(data)
 ```{r}
 summary(data$diabetes)
 ```
-Создайте на основе переменной age новую переменную age_group, которая будет отражать следующие возрастные группы: 21–35, 36–49 и 50+. Посчитайте описательную статистику для новой переменной. — 1 балл
+
+Создайте на основе переменной age новую переменную age_group, которая будет отражать следующие возрастные группы: 21–35, 36–49 и 50+. Посчитайте описательную статистику для новой переменной.
 
 ```{r}
 summary(data$age)
 ```
-
+Добавляем новую переменную age_group. Т.к. минимальное значение возраста 21, проводим проверку только по верхней границе этой группы.
 
 ```{r}
 data$age_group <- ifelse(data$age <= 35, '21–35', 
                          ifelse(data$age >= 36 & data$age <= 49, '36–49' , '50+'))
 ```
 
+
+Переводим ее в факториальную.
 ```{r}
-#summary(data$age_group)
 data <- data %>% 
   mutate(age_group = as.factor(age_group))
 head(data)
@@ -68,12 +107,13 @@ head(data)
 ```{r}
 summary(data$age_group)
 ```
-Определите 90% доверительный интервал для переменной pedigree. — 2 балла
+Определите 90% доверительный интервал для переменной pedigree.
+
+Задаем доверительный интервал (по дефолту = 0,95)
 
 ```{r}
-t_test <- t.test(data$pedigree, conf.level = 0.9) # Задаем уровень доверия в 90%.
+t_test <- t.test(data$pedigree, conf.level = 0.9)
 
-# Выводим результаты доверительного интервала.
 t_test
 ```
 
@@ -95,7 +135,7 @@ ggplot(data, aes(x = glucose)) +
   labs(title = "График плотности для переменной glucose", x = "Уровень глюкозы", y = "Плотность") + 
   theme(plot.title = element_text(hjust = 0.5))
 ```
-Постройте два ящика с усами для значений pos и neg соответственно переменной diabetes. — 3 балла
+Постройте два ящика с усами для значений pos и neg соответственно переменной diabetes.
 
 ```{r}
 boxplot(
@@ -108,32 +148,30 @@ boxplot(
 ```
 
 
-Постройте на одном графике две диаграммы рассеяния для наличия или отсутствия диабета. По оси X представьте значения обхвата трицепса, а по оси Y — массу тела. Выполните окрашивание, заливку и группирование по переменной diabetes. — 3 балла
+Постройте на одном графике две диаграммы рассеяния для наличия или отсутствия диабета. По оси X представьте значения обхвата трицепса, а по оси Y — массу тела. Выполните окрашивание, заливку и группирование по переменной diabetes.
 
+```{r}
+summary(data$triceps)
+```
+```{r}
+summary(data$mass)
+```
+Для правильного расчета нужно исключить нулевые значения.
 
-
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+data2 <- subset(data, data$triceps > 0 & data$mass > 0)
 ```
 
-## R Markdown
+```{r}
+ggplot(data2, aes(x = triceps, y = mass, color = diabetes)) +
+  geom_point() +
+  facet_grid(. ~ diabetes) +
+  labs(
+    title = "Диаграмма рассеяния",
+    x = "Обхват трицепса",
+    y = "Масса тела"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
